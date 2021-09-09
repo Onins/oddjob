@@ -2,155 +2,227 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const state = {
-  userLoggedInData: null,
+  // userUpdate: false,
   userDetails: null,
-
   userIsLoggedIn: false,
-  userToken: null
+  userData: null,
+  userAppliedJobs: null,
+  userRequestAlert: null
 };
 
 const getters = {
-  getUserLoggedInData: (state) => { return state.userLoggedInData },
+  // getUserUpdate: (state) => { return state.userUpdate },
   getUserIsLoggedIn: (state) => { return state.userIsLoggedIn },
   getUserDetails: (state) => { return state.userDetails },
-  getUserToken: (state) => { return state.userToken }
+  getUserData: (state) => { return state.userData },
+  getUserAppliedJobs: (state) => { return state.userAppliedJobs },
+  getUserRequestAlert: (state) => { return state.userRequestAlert }
 }
 
 const mutations = {
-  setUserLoggedInData(state, items) { state.userLoggedInData = items },
+  // setUserUpdate(state, items) { state.userUpdate = items },
   setUserIsLoggedIn(state, items) { state.userIsLoggedIn = items },
   setUserDetails(state, items) { state.userDetails = items },
-  setUserToken(state, items) { state.userToken = items },
+  setUserData(state, items) { state.userData = items },
+  setUserAppliedJobs(state, items) { state.userAppliedJobs = items },
+  setUserRequestAlert(state, items) { state.userRequestAlert = items}
 };
 
 const actions = {
   async userLogin({ commit }, data) {
     let dataset = JSON.stringify({
-      "email": "kai@test.com",
-      "password": "pass"
+      "email": data.email,
+      "password": data.pass
     });
         
     let config = {
       method: 'post',
-      url: 'http://192.168.241.51:3000/user/login',
+      url: 'http://192.168.0.20:3000/user/login',
       headers: { 
         'Content-Type': 'application/json'
       },
       data : dataset
     };
 
-    let token;
-
-    setStoredToken = async (value) => {
+    setStoredData = async (value) => {
+      
       try {
-        await AsyncStorage.setItem('@token', value)
+        await AsyncStorage.setItem('@userData', JSON.stringify(value))
       } catch(e) {
         // save error
       }
     }
 
-    getStoredToken = async () => {
+    getStoredData = async () => {
+      let value;
       try {
-        return await AsyncStorage.getItem('@token')
+        value = await AsyncStorage.getItem('@userData')
       } catch(e) {
         // read error
       }
+      
+      return JSON.parse(value);
     }
 
     await axios(config)
       .then((response) => {
         if (response.status == "200") {
           let list = response.data;
+          let storageData = {
+            token: list.token,
+            id: list.userId
+          }
+        
+          console.log("wew",storageData)
+          setStoredData(storageData);
           
-          setStoredToken(list.token);
-          
-          commit('setUserIsLoggedIn', true);
-          
-          commit('setUserLoggedInData', {list})    
+          commit('setUserIsLoggedIn', true);           
         }
         else {
           commit('setUserIsLoggedIn', false)
         }
       
-      }).catch(error => console.log("Error: ", error))
+      }).catch(error => 
+        commit('setUserRequestAlert', error + ". \n\n Please check your user information."))
     
-    commit('setUserToken', await getStoredToken());
+    
+    commit('setUserData', await getStoredData());
     return
   },
   
-  async userDetails({ commit }, data){
+  async userDetails({ commit }, data) {
     let config = {
       method: 'get',
-      url: 'http://192.168.241.51:3000/user/' + data.id,
+      url: 'http://192.168.0.20:3000/user/' + data.id,
     };
-    console.log(config.url);
     axios(config)
       .then((response) => {            
-        let list = response.data;
-        console.log(JSON.stringify(response.data));
-        return commit('setUserDetails', { list })
+        let data = response.data;
+        return commit('setUserDetails', { data })
     }).catch(error => console.log("Error: ", error))
   },
 
   async userStoredLogin({ commit }){
-    
-    getStoredToken = async () => {
+    getStoredData = async () => {
+      let value;
       try {
-        return await AsyncStorage.getItem('@token')
+        value = await AsyncStorage.getItem('@userData')
       } catch(e) {
         // read error
       }
+      
+      return JSON.parse(value);
     }
-
-    if (await getStoredToken() != null) {
+    let storedValues = await getStoredData()
+    if (await storedValues.token != null && await storedValues != undefined && await storedValues != "") {
       commit('setUserIsLoggedIn', true);
-      commit('setUserToken', await getStoredToken())
+      commit('setUserData', await getStoredData())
     }
     else {
       commit('setUserIsLoggedIn', false);
-      commit('setUserToken', await getStoredToken())
+      commit('setUserData', await getStoredData())
     }
     return 
   },
 
-  async userLogout({ commit }){
-    setStoredToken = async (value) => {
-      try {
-        await AsyncStorage.setItem("@token", value);
-      } catch (e) {
-        // save error
+  userAppliedJob: ({ commit }, data) => {
+    let config = {
+      method: 'get',
+      url: 'http://192.168.0.20:3000/user/' + data.id + "/jobsassigned",
+      headers: { 
+        'Authorization': 'Bearer ' + data.token 
       }
     };
+    console.log(config.url);
+    axios(config)
+      .then((response) => {            
+        let list = response.data.jobs;
+        console.log('hoho', list)
+        return commit('setUserAppliedJobs', { list })      
+    }).catch(error => console.log("Error: ", error))
+  },
 
-    getStoredToken = async () => {
+  async userLogout({ commit }) {  
+    setStoredData = async (value) => {
       try {
-        return await AsyncStorage.getItem('@token')
+        await AsyncStorage.setItem('@userData', JSON.stringify(value))
+      } catch(e) {
+        // save error
+      }
+    }
+
+    getStoredData = async () => {
+      let value;
+      try {
+        value = await AsyncStorage.getItem('@userData')
       } catch(e) {
         // read error
       }
+      
+      return JSON.parse(value);
+    }
+    
+
+    let storageData = {
+      token: null,
+      id: null
     }
   
-    setStoredToken("");
+    setStoredData(storageData);
     commit('setUserIsLoggedIn', false);
-    commit('setUserToken', await getStoredToken());
+    commit('setUserData', await getStoredData());
+    commit('setUserDetails', null);
+    commit('setUserAppliedJobs', null);
     return;
+  },
+
+  async userSignup({ commit }, data) {
+    var dataset = JSON.stringify({
+      "email": data.email,
+      "password": data.pass,
+      "name": data.name
+    });
+        
+    let config = {
+      method: 'post',
+      url: 'http://192.168.0.20:3000/user/signup',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      data : dataset
+    };
+    console.log('URL',config.url);
+    axios(config)
+      .then((response) => {
+        console.log("Hehe", response);
+        console.log(response.status);
+        if (response.status == 201) {
+          return commit('setUserRequestAlert', "User created successfully. Please try to login.")
+        }     
+      }).catch(error =>        
+        commit('setUserRequestAlert', error + ". \n\n Error 409: Email already exist. \n Error 500: Email format not valid.")
+      )
+  },
+
+  clearAlertMessage({commit}) {
+    commit('setUserRequestAlert', "");
   }
 
-  // userSignup: ({ commit }, data) => {
-  //   let config = {
-  //     method: 'get',
-  //     url: 'http://192.168.0.16:3000/jobs/' + data.id,
-  //     // headers: { 
-  //     //   'Authorization': 'k0pvp7knyf', 
-  //     //   'Cookie': '__cfduid=da679879c353b4f0834646b68116ac5ce1601792209'
-  //     // }
-  //   };
-  //   console.log(config.url);
-  //   axios(config)
-  //     .then((response) => {            
-  //       let list = response.data;
-  //       return commit('setSelectedJob', { list })      
-  //   }).catch(error => console.log("Error: ", error))
+
+
+  // async userUpdate({ commit, getters }) {
+    
+  //   let toggle = getters.getUserUpdate;
+  //   console.log('update before', toggle);
+  //   if (toggle) {
+  //     toggle = false;
+  //   }
+  //   else {
+  //     toggle = true;
+  //   }
+
+  //   console.log('update after', toggle);
+  //   commit('setUserUpdate', toggle);
   // }
 };
 

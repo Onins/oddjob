@@ -7,19 +7,19 @@ const state = {
 
 const getters = {
   getAllJobs: (state) => { return state.allJobs },
-  getSelectedJob: (state) => { return state.selectedJobs }
+  getSelectedJob: (state) => { return state.selectedJobs }  
 }
 
 const mutations = {
   setAllJobs(state, items) { state.allJobs = items },
-  setSelectedJob(state, items) { state.selectedJobs = items}
+  setSelectedJob(state, items) { state.selectedJobs = items }  
 };
 
 const actions = {
   fetchAllJobs: ({ commit }) => {
     let config = {
       method: 'get',
-      url: 'http://192.168.241.51:3000/jobs',
+      url: 'http://192.168.0.20:3000/jobs',
       // headers: { 
       //   'Authorization': 'k0pvp7knyf', 
       //   'Cookie': '__cfduid=da679879c353b4f0834646b68116ac5ce1601792209'
@@ -36,7 +36,7 @@ const actions = {
   fetchSelectedJob: ({ commit }, data) => {
     let config = {
       method: 'get',
-      url: 'http://192.168.241.51:3000/jobs/' + data.id,
+      url: 'http://192.168.0.20:3000/jobs/' + data.id,
       // headers: { 
       //   'Authorization': 'k0pvp7knyf', 
       //   'Cookie': '__cfduid=da679879c353b4f0834646b68116ac5ce1601792209'
@@ -46,6 +46,7 @@ const actions = {
     axios(config)
       .then((response) => {            
         let list = response.data;
+        console.log(list)
         return commit('setSelectedJob', { list })      
     }).catch(error => console.log("Error: ", error))
   }

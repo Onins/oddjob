@@ -14,8 +14,9 @@ import JobsApplied from "./src/screens/JobsApplied";
 import JobsListed from "./src/screens/JobsListed";
 import JobsDetails from "./src/screens/JobsDetails";
 import LoginRegistration from "./src/screens/LoginRegistration.vue";
+import "./src/store";
 
-import store from "./src/store";
+import { mapGetters } from "vuex";
 
 const IOSTabs = createBottomTabNavigator({
   Home: JobsListed,
@@ -41,12 +42,35 @@ export default {
   components: {
     AppNavigator,
   },
+  computed: {
+    ...mapGetters(["getUserData"]),
+  },
   methods: {
     fetchAllJobs() {
       this.$store.dispatch("fetchAllJobs");
     },
-    checkLoggedIn() {
-      this.$store.dispatch("userStoredLogin");
+
+    async checkLoggedIn() {
+      await this.$store.dispatch("userStoredLogin");
+
+      if (this.getUserData) {
+        if (this.getUserData.token) {
+          await this.$store.dispatch("userDetails", {
+            id: this.getUserData.id,
+          });
+
+          this.fetchUserAppliedJobs();
+        }
+      }
+    },
+
+    async fetchUserAppliedJobs() {
+      if (this.getUserData) {
+        await this.$store.dispatch("userAppliedJob", {
+          token: this.getUserData.token,
+          id: this.getUserData.id,
+        });
+      }
     },
   },
   mounted() {
