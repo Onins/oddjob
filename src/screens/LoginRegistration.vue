@@ -1,109 +1,65 @@
 <template>
-  <view>
-    <text>Login Page</text>
+  <view class="screen">
+    <text class="header">User Page</text>
 
-    <view v-if="getUserIsLoggedIn == false">
+    <view v-if="getUserIsLoggedIn == false" class="container">
       <view v-if="isLoginForm" class="user-login">
-        <text>Email:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="email"
-        />
-        <text>Password:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="pass"
-        />
-
-        <button
-          :on-press="authenticateUser"
-          title="Login"
-          color="#841584"
-          accessibility-label="User Login"
-        />
-        <button
-          @press="userSwitchForm('toRegister')"
-          title="Sign Up"
-          color="#841584"
-          accessibility-label="Switch to Register"
-        />
+        <text class="label">Email:</text>
+        <text-input class="input" v-model="email" />
+        <text class="label">Password:</text>
+        <text-input class="input" v-model="pass" />
+        <view class="button-wrapper">
+          <view class="button">
+            <button
+              :on-press="authenticateUser"
+              title="Login"
+              accessibility-label="User Login"
+            />
+          </view>
+          <view class="button">
+            <button
+              @press="userSwitchForm('toRegister')"
+              title="Sign Up"
+              accessibility-label="Switch to Register"
+            />
+          </view>
+        </view>
       </view>
       <view v-if="isLoginForm == false" class="user-register">
-        <text>Email:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="rEmail"
-        />
-        <text>Password:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="rPass"
-        />
-        <text>Confirm Password:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="rCPass"
-        />
-        <text>Name:</text>
-        <text-input
-          :style="{
-            height: 40,
-            width: 100,
-            borderColor: 'gray',
-            borderWidth: 1,
-          }"
-          v-model="rName"
-        />
-
-        <button
-          @press="registerUser()"
-          title="Submit"
-          color="#841584"
-          accessibility-label="User Register"
-        />
-        <button
-          @press="userSwitchForm('toLogin')"
-          title="Already have an account!"
-          color="#841584"
-          accessibility-label="Switch to login"
-        />
+        <text class="label">Email:</text>
+        <text-input class="input" v-model="rEmail" />
+        <text class="label">Password:</text>
+        <text-input class="input" v-model="rPass" />
+        <text class="label">Confirm Password:</text>
+        <text-input class="input" v-model="rCPass" />
+        <text class="label">Name:</text>
+        <text-input class="input" v-model="rName" />
+        <view class="button-wrapper">
+          <view class="button">
+            <button
+              @press="registerUser()"
+              title="Submit"
+              accessibility-label="User Register"
+          /></view>
+          <view>
+            <button
+              @press="userSwitchForm('toLogin')"
+              title="Sign In!"
+              accessibility-label="Switch to login"
+            />
+          </view>
+        </view>
       </view>
     </view>
 
-    <view v-if="getUserIsLoggedIn == true">
-      <text>Welcome {{ userName }} </text>
-      <text>Name: {{ userName }} </text>
-      <text>Email: {{ userEmail }} </text>
+    <view v-if="getUserIsLoggedIn == true" class="user-profile">
+      <text class="welcome">Welcome {{ userName }} </text>
+      <text class="text-data">Name: {{ userName }} </text>
+      <text class="text-data">Email: {{ userEmail }} </text>
 
       <button
         :on-press="logoutUser"
         title="Logout"
-        color="#841584"
         accessibility-label="User Logout"
       />
     </view>
@@ -227,3 +183,61 @@ export default {
   },
 };
 </script>
+
+<style>
+.screen {
+  background-color: #474343;
+  height: 100%;
+}
+
+.header {
+  font-size: 30px;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 20px;
+  color: #fff;
+}
+.container {
+  margin: 20px;
+  padding: 20px;
+}
+
+.user-profile {
+  margin: 20px;
+  padding: 20px;
+}
+
+.label {
+  color: #fff;
+}
+
+.input {
+  background-color: white;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.button-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.button {
+  margin-right: 10px;
+  padding: 0 20px;
+  width: 100px;
+}
+
+.welcome {
+  font-size: 30px;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.text-data {
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+</style>
